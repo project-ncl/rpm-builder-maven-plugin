@@ -105,7 +105,6 @@ public class RPMBuilder extends AbstractMojo {
                         }
                     })
                     .setWorkingDirectory(workingDirectory);
-            getLog().debug("Running RPM build with " + pb);
             ManagedProcess p = pb.build().start();
             int result = p.waitForExit();
             if (result != 0) {
@@ -127,7 +126,6 @@ public class RPMBuilder extends AbstractMojo {
                 }
             });
 
-            this.getLog().debug("Found RPMs: " + paths);
             File output = new File(outputDirectory, project.getArtifactId() + "-" + project.getVersion() + "-bin.zip");
             try (final OutputStream out = Files.newOutputStream(output.toPath());
                     final ZipArchiveOutputStream archive = new ArchiveStreamFactory()
