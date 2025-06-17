@@ -1,0 +1,19 @@
+<component-set>
+  <components>
+    <!-- Life-cycle mappings -->
+    <component>
+      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+      <role-hint>rpm</role-hint>
+      <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
+      <configuration>
+        <phases>
+          <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
+          <install>org.apache.maven.plugins:maven-compile-plugin:compile</install>
+          <package>org.jboss.pnc:rpm-builder-maven-plugin:package</package>
+          <install>org.apache.maven.plugins:maven-install-plugin:install</install>
+          <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
+        </phases>
+      </configuration>
+    </component>
+  </components>
+</component-set>

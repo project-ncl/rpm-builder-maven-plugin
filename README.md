@@ -12,7 +12,13 @@ Then the plugin sets up the correct directories and runs `rpmbuild -ba` generati
 A complete example:
 
 ```xml
-      <plugin>
+    <artifactId>my-build</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>rpm</packaging>
+
+    <!-- ... -->
+
+    <plugin>
         <groupId>org.jboss.pnc</groupId>
         <artifactId>rpm-builder-maven-plugin</artifactId>
         <version>1.0-SNAPSHOT</version>
