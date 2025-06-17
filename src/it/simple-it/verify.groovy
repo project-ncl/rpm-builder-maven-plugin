@@ -11,5 +11,5 @@ new ZipFile(zipFile).entries().each {
 }
 
 assert entries.size() == 2
-assert entries.stream().sorted().toArray().toString().contains("apache-sshd-1.0-1.src.rpm, noarch/apache-sshd-1.0-1.noarch.rpm]")
+assert entries.stream().sorted().toArray().toString().contains("apache-sshd-1.0-1.el9.src.rpm, noarch/apache-sshd-1.0-1.el9.noarch.rpm]")
 assert ! buildLog.text.contains("Using groovy script")

@@ -3,9 +3,11 @@
 
 This plugin assists in building RPMs while using [PME](https://github.com/release-engineering/pom-manipulation-ext).
 
-This requires the `rpmbuild` binary to be installed in the host system. It should be run in a directory containing a spec file which (currently) should be specified by the `specFile` configuration parameter.
+This requires the `rpmbuild` binary to be installed in the host system. It should be run in a directory containing a spec file which will be automatically located.
 
-An optional `groovyPatch` configuration parameter may be used to patch the spec file e.g. if PME has been run on the containing pom then this could be used to update template fields within the spec file. 
+### Optional Parameters
+* A `groovyPatch` configuration parameter may be used to patch the spec file e.g. if PME has been run on the containing pom then this could be used to update template fields within the spec file. 
+* A `macros` configuration map may be used to pass additional macro defines to the `rpmbuild` command.
 
 Then the plugin sets up the correct directories and runs `rpmbuild -ba` generating the source and binary RPMs into the target directory. Finally it will package those RPMs into a zip which will be attached to the build.
 
@@ -24,7 +26,9 @@ A complete example:
         <version>1.0-SNAPSHOT</version>
         <extensions>true</extensions>
         <configuration>
-          <specFile>apache-sshd.spec</specFile>
+          <macros>
+              <dist>.el9eap8</dist>
+          </macros>
           <groovyPatch>
                 def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
                 def original_version = "${sshd}".replaceAll(".redhat.*", "")

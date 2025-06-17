@@ -21,7 +21,6 @@
         <version>@project.version@</version>
         <extensions>true</extensions>
         <configuration>
-          <specFile>apache-sshd.spec</specFile>
           <groovyPatch>
             def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
             def original_version = "${sshd}".replaceAll(".redhat.*", "")
