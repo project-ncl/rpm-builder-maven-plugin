@@ -33,7 +33,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: 21
+        java-version: 17
     - name: Set up Maven
       uses: stCarolas/setup-maven@v5
       with:
@@ -56,7 +56,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: 21
+        java-version: 17
     # https://github.com/marketplace/actions/maven-setings-action
     - name: Maven Settings
       uses: s4u/maven-settings-action@v3.1.0
