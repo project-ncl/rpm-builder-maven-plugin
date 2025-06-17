@@ -15,7 +15,6 @@
 
   <name>rpm-builder-maven-plugin</name>
   <url>https://github.com/project-ncl/rpm-builder-maven-plugin</url>
-
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -34,6 +33,12 @@
   <prerequisites>
     <maven>${maven.version}</maven>
   </prerequisites>
+  <scm>
+    <connection>scm:git:https://github.com/project-ncl/rpm-builder-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:project-ncl/rpm-builder-maven-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/project-ncl/rpm-builder-maven-plugin</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
