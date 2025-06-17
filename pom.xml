@@ -88,6 +88,13 @@
       <version>3.13.1</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.commonjava.maven.ext</groupId>
+      <artifactId>pom-manipulation-core</artifactId>
+      <version>4.20</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
