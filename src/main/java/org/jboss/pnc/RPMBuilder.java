@@ -51,14 +51,23 @@ public class RPMBuilder extends AbstractMojo {
     @Component
     private MavenProject project;
 
-    @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true)
+    @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true, readonly = true)
     private File workingDirectory;
 
+    @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true, readonly = true)
+    private File outputDirectory;
+
+    /**
+     * Custom groovy script to run against the spec file.
+     */
     @Parameter(property = "groovyPatch")
     private String groovyPatch;
 
-    @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true)
-    private File outputDirectory;
+    /**
+     * Whether to skip the plugin
+     */
+    @Parameter(defaultValue = "false", property = "skip")
+    private boolean skip;
 
     /**
      * Custom extra macros to pass through. For example:
@@ -73,6 +82,10 @@ public class RPMBuilder extends AbstractMojo {
     public void execute()
             throws MojoExecutionException {
 
+        if (skip) {
+            getLog().info("Skipping RPM plugin");
+            return;
+        }
         File buildDir = new File(outputDirectory, "build");
         File specDir = new File(outputDirectory, "spec");
         //noinspection ResultOfMethodCallIgnored
