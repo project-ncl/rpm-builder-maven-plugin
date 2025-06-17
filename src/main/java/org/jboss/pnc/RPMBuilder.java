@@ -13,6 +13,10 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 
@@ -33,7 +37,6 @@ import org.slf4j.event.Level;
 
 import ch.vorburger.exec.ManagedProcess;
 import ch.vorburger.exec.ManagedProcessBuilder;
-import ch.vorburger.exec.ManagedProcessException;
 import ch.vorburger.exec.OutputStreamLogDispatcher;
 import ch.vorburger.exec.OutputStreamType;
 import groovy.lang.GroovyShell;
@@ -48,35 +51,58 @@ public class RPMBuilder extends AbstractMojo {
     @Component
     private MavenProject project;
 
-    // TODO: If there is always one spec file should we automatically locate it?
-    @Parameter(property = "specFile", required = true)
-    private File specFile;
-
-    @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true)
+    @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true, readonly = true)
     private File workingDirectory;
 
+    @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true, readonly = true)
+    private File outputDirectory;
+
+    /**
+     * Custom groovy script to run against the spec file.
+     */
     @Parameter(property = "groovyPatch")
     private String groovyPatch;
 
-    @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true)
-    private File outputDirectory;
+    /**
+     * Whether to skip the plugin
+     */
+    @Parameter(defaultValue = "false", property = "skip")
+    private boolean skip;
+
+    /**
+     * Custom extra macros to pass through. For example:
+     * <macros>
+     * <dist>.el8eap</dist>
+     * <scl>eap8</scl>
+     * </macros>
+     */
+    @Parameter(property = "macros")
+    private Map<String, String> macros = new HashMap<>();
 
     public void execute()
             throws MojoExecutionException {
-        if (specFile == null) {
-            throw new MojoExecutionException("specFile must be set");
-        }
 
+        if (skip) {
+            getLog().info("Skipping RPM plugin");
+            return;
+        }
         File buildDir = new File(outputDirectory, "build");
         File specDir = new File(outputDirectory, "spec");
         //noinspection ResultOfMethodCallIgnored
         buildDir.mkdirs();
         //noinspection ResultOfMethodCallIgnored
         specDir.mkdirs();
-        Path targetSpecFile = specDir.toPath().resolve(specFile.getName());
 
-        try {
-            Files.copy(specFile.toPath(), targetSpecFile, StandardCopyOption.REPLACE_EXISTING);
+        try (Stream<Path> walk = Files.walk(workingDirectory.toPath(), 1)) {
+
+            List<Path> specFiles = walk.filter(f -> f.getFileName().toString().endsWith(".spec")).toList();
+            if (specFiles.size() != 1) {
+                throw new MojoExecutionException(
+                        "Incorrect number of spec files found (" + specFiles.size() + ") " + specFiles);
+            }
+            Path specFile = specFiles.get(0);
+            Path targetSpecFile = specDir.toPath().resolve(specFile.toFile().getName());
+            Files.copy(specFile, targetSpecFile, StandardCopyOption.REPLACE_EXISTING);
 
             if (isNotEmpty(groovyPatch)) {
                 getLog().info("Using groovy script: " + groovyPatch);
@@ -84,19 +110,18 @@ public class RPMBuilder extends AbstractMojo {
                 final Script script = shell.parse(groovyPatch);
                 script.run();
             }
-        } catch (IOException e) {
-            throw new MojoExecutionException(e);
-        }
 
-        try {
             ManagedProcessBuilder pb = new ManagedProcessBuilder("rpmbuild")
                     .addArgument("--define=_topdir " + workingDirectory.getAbsolutePath(), false)
                     .addArgument("--define=_sourcedir " + workingDirectory.getAbsolutePath(), false)
                     .addArgument("--define=_rpmdir " + outputDirectory.getAbsolutePath(), false)
                     .addArgument("--define=_srcrpmdir " + outputDirectory.getAbsolutePath(), false)
                     .addArgument("--define=_specdir " + specDir.getAbsolutePath(), false)
-                    .addArgument("--define=_builddir " + buildDir.getAbsolutePath(), false)
-                    .addArgument("-ba")
+                    .addArgument("--define=_builddir " + buildDir.getAbsolutePath(), false);
+
+            macros.forEach((key, value) -> pb.addArgument("--define=" + key + " " + value, false));
+
+            pb.addArgument("-ba")
                     .addArgument(targetSpecFile.toAbsolutePath().toString())
                     .setOutputStreamLogDispatcher(new OutputStreamLogDispatcher() {
                         @Override
@@ -105,16 +130,13 @@ public class RPMBuilder extends AbstractMojo {
                         }
                     })
                     .setWorkingDirectory(workingDirectory);
+
             ManagedProcess p = pb.build().start();
             int result = p.waitForExit();
             if (result != 0) {
                 throw new MojoExecutionException("Process exited with code " + result);
             }
-        } catch (ManagedProcessException e) {
-            throw new RuntimeException(e);
-        }
 
-        try {
             final Collection<Path> paths = new ArrayList<>();
             Files.walkFileTree(outputDirectory.toPath(), new SimpleFileVisitor<>() {
                 @Override
@@ -144,7 +166,7 @@ public class RPMBuilder extends AbstractMojo {
             project.getArtifact().setFile(output);
 
         } catch (IOException | ArchiveException e) {
-            throw new RuntimeException(e);
+            throw new MojoExecutionException(e);
         }
 
     }

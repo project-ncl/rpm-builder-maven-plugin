@@ -1,6 +1,6 @@
 Name:           apache-sshd
 Version:        1.0
-Release:        1
+Release:        1%{?dist}
 Epoch:          0
 Summary:        Apache Mina SSHD
 Group:          Development/Java
