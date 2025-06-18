@@ -23,7 +23,7 @@ A complete example:
     <plugin>
         <groupId>org.jboss.pnc</groupId>
         <artifactId>rpm-builder-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
         <extensions>true</extensions>
         <configuration>
           <macros>
