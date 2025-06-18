@@ -10,7 +10,7 @@
 
   <groupId>org.jboss.pnc</groupId>
   <artifactId>rpm-builder-maven-plugin</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>maven-plugin</packaging>
 
   <name>rpm-builder-maven-plugin</name>
@@ -36,7 +36,7 @@
   <scm>
     <connection>scm:git:https://github.com/project-ncl/rpm-builder-maven-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/rpm-builder-maven-plugin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>rpm-builder-maven-plugin-1.0</tag>
     <url>https://github.com/project-ncl/rpm-builder-maven-plugin</url>
   </scm>
 
@@ -220,10 +220,10 @@
             <executions>
               <execution>
                 <id>sign-artifacts</id>
-                <phase>verify</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>
