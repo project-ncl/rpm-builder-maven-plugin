@@ -12,9 +12,10 @@ parser.add_argument('rhVersion')
 parser.add_argument('serial')
 args = parser.parse_args()
 
+print("Looking for spec file in " + os.getcwd())
 spec = [x for x in os.listdir(os.getcwd()) if x.endswith('.spec')]
 if len(spec) != 1:
-    print("ERROR: Found multiple spec files " + str(spec))
+    print("ERROR: Found incorrect number of spec files " + str(spec))
     exit(1)
 
 print ("Found spec file " +  spec[0])
