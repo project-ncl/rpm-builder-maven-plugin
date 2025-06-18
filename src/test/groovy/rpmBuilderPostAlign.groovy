@@ -21,6 +21,7 @@ println "Serial ${serial} OrigVersion ${original_version} RHVersion ${rh_version
 
 // For local testing can change to local file e.g. file:///tmp/rpm-builder-maven-plugin/generateChangelog.py
 File remoteChangelogGenerator = pme.getFileIO().resolveURL ("https://github.com/project-ncl/rpm-builder-maven-plugin/raw/refs/heads/main/generateChangelog.py")
-String command = "python3 " + remoteChangelogGenerator.getAbsoluteFile() + " " + original_version + " " + rh_version + " " + serial
+String command = "/usr/bin/python3 " + remoteChangelogGenerator.getAbsoluteFile() + " " + original_version + " " + rh_version + " " + serial
+println "Executing command: ${command}"
 def python = command.execute()
 python.consumeProcessOutput(System.out, System.err)
