@@ -24,4 +24,8 @@ File remoteChangelogGenerator = pme.getFileIO().resolveURL ("https://github.com/
 String command = "/usr/bin/python3 " + remoteChangelogGenerator.getAbsoluteFile() + " " + original_version + " " + rh_version + " " + serial
 println "Executing command: ${command}"
 def python = command.execute()
-python.consumeProcessOutput(System.out, System.err)
+python.waitForProcessOutput(System.out, System.err)
+if (python.waitFor() != 0) {
+    pme.getLogger().error("Python did not exit correctly")
+    throw new RuntimeException("Python run failure")
+}
