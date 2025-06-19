@@ -100,7 +100,13 @@
       <groupId>org.commonjava.maven.ext</groupId>
       <artifactId>pom-manipulation-core</artifactId>
       <version>4.20</version>
-      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <!-- Only want code from the core module itself -->
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
