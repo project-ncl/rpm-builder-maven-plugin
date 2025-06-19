@@ -5,12 +5,15 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +37,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.commonjava.maven.ext.core.impl.Version;
 import org.slf4j.event.Level;
 
 import ch.vorburger.exec.ManagedProcess;
@@ -73,6 +77,9 @@ public class RPMBuilder extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip")
     private boolean skip;
 
+    @Parameter(property = "changeLog")
+    private Changelog changeLog;
+
     /**
      * Custom extra macros to pass through. For example:
      * <macros>
@@ -97,6 +104,15 @@ public class RPMBuilder extends AbstractMojo {
         //noinspection ResultOfMethodCallIgnored
         specDir.mkdirs();
 
+        String wrappedBuild = project.getProperties().getProperty("wrappedBuild");
+        if (wrappedBuild == null) {
+            getLog().error(
+                    "Unable to find wrappedBuild property in project properties. Define this property to denote the version of the build to be wrapped inside the RPM");
+            if (changeLog != null && changeLog.generate) {
+                throw new MojoExecutionException("Unable to find wrappedBuild property");
+            }
+        }
+
         try (Stream<Path> walk = Files.walk(workingDirectory.toPath(), 1)) {
 
             List<Path> specFiles = walk.filter(f -> f.getFileName().toString().endsWith(".spec")).toList();
@@ -113,6 +129,31 @@ public class RPMBuilder extends AbstractMojo {
                 final GroovyShell shell = new GroovyShell();
                 final Script script = shell.parse(groovyPatch);
                 script.run();
+            }
+            if (changeLog != null && changeLog.generate) {
+                String serial = project.getVersion().split(".*redhat-0+")[1];
+                LocalDateTime dt = LocalDateTime.now();
+                String title = "* " + dt.format(DateTimeFormatter.ofPattern("E MMM dd yyyy")) + " "
+                        + changeLog.email + " - "
+                        + Version.getMMM(wrappedBuild) + "-"
+                        + serial
+                        + Version.getQualifierWithDelim(wrappedBuild).replace("-", "_") + ".1";
+
+                getLog().info("Generating changelog with title '" + title + "'' and message " + changeLog.message);
+
+                List<String> specLines = Files.readAllLines(targetSpecFile);
+                List<String> newSpecLines = new ArrayList<>();
+                specLines.forEach(line -> {
+                    if (line.startsWith("%changelog")) {
+                        newSpecLines.add(line);
+                        newSpecLines.add(title);
+                        newSpecLines.add(changeLog.message);
+                        newSpecLines.add("");
+                    } else {
+                        newSpecLines.add(line);
+                    }
+                });
+                Files.write(targetSpecFile, newSpecLines, Charset.defaultCharset());
             }
 
             ManagedProcessBuilder pb = new ManagedProcessBuilder("rpmbuild")
@@ -174,5 +215,23 @@ public class RPMBuilder extends AbstractMojo {
             throw new MojoExecutionException(e);
         }
 
+    }
+
+    public static class Changelog {
+        public boolean generate;
+        public String email = "project-ncl@redhat.com";
+        public String message = "- New Release";
+
+        public Changelog() {
+        }
+
+        @Override
+        public String toString() {
+            return "Changelog{" +
+                    "generate=" + generate +
+                    ", email='" + email + '\'' +
+                    ", message='" + message + '\'' +
+                    '}';
+        }
     }
 }
