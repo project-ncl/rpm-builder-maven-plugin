@@ -5,18 +5,20 @@ This plugin assists in building RPMs while using [PME](https://github.com/releas
 
 This requires the `rpmbuild` binary to be installed in the host system. It should be run in a directory containing a spec file which will be automatically located.
 
+**Note**: when using this plugin the packaging should be set to `spec`. It will attach the spec file (that may have been modified by the patching mechanism) to the build as the primary artifact.
+
 ### Optional Parameters
 * A `groovyPatch` configuration parameter may be used to patch the spec file e.g. if PME has been run on the containing pom then this could be used to update template fields within the spec file. 
 * A `macros` configuration map may be used to pass additional macro defines to the `rpmbuild` command.
 
-Then the plugin sets up the correct directories and runs `rpmbuild -ba` generating the source and binary RPMs into the target directory. Finally it will package those RPMs into a zip which will be attached to the build.
+Then the plugin sets up the correct directories and runs `rpmbuild -ba` generating the source and binary RPMs into the target directory. Finally, it will package those RPMs into a zip which will be attached to the build.
 
 A complete example:
 
 ```xml
     <artifactId>my-build</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>rpm</packaging>
+    <packaging>spec</packaging>
 
     <!-- ... -->
 

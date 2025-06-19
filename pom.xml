@@ -50,6 +50,8 @@
     <jboss.releases.repo.url>https://oss.sonatype.org/service/local/staging/deploy/maven2</jboss.releases.repo.url>
     <jboss.snapshots.repo.id>sonatype-nexus-snapshots</jboss.snapshots.repo.id>
     <jboss.snapshots.repo.url>https://oss.sonatype.org/content/repositories/snapshots</jboss.snapshots.repo.url>
+
+    <selectedTest>*</selectedTest>
   </properties>
 
   <dependencies>
@@ -115,7 +117,7 @@
             </sortPom>
           </pom>
           <java>
-            <removeUnusedImports />
+            <removeUnusedImports/>
             <importOrder>
               <order>java,javax,jakarta,org,com</order>
             </importOrder>
@@ -145,7 +147,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <configuration>
-          <!-- <goalPrefix>maven-archetype-plugin</goalPrefix> -->
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
         </configuration>
         <executions>
@@ -194,6 +195,9 @@
                 <goal>clean</goal>
                 <goal>package</goal>
               </goals>
+              <pomIncludes>
+                <pomInclude>${selectedTest}/pom.xml</pomInclude>
+              </pomIncludes>
             </configuration>
             <executions>
               <execution>

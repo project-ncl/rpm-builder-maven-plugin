@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jboss.pnc.it</groupId>
-  <artifactId>simple-it-groovy</artifactId>
+  <artifactId>simple-it-groovy-deploy</artifactId>
   <version>1.0.0.redhat-00002</version>
   <packaging>spec</packaging>
 

@@ -3,7 +3,7 @@
     <!-- Life-cycle mappings -->
     <component>
       <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
-      <role-hint>rpm</role-hint>
+      <role-hint>spec</role-hint>
       <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
       <configuration>
         <phases>

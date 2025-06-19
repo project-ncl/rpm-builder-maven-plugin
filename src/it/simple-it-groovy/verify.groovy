@@ -1,7 +1,7 @@
 import java.util.zip.ZipFile
 
 def buildLog = new File(basedir, 'build.log')
-def zipFile = new File(basedir, "target/simple-it-1.0.0.redhat-00002-bin.zip")
+def zipFile = new File(basedir, "target/simple-it-groovy-1.0.0.redhat-00002-bin.zip")
 
 assert zipFile.exists()
 

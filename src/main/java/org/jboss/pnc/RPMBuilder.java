@@ -33,6 +33,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.slf4j.event.Level;
 
 import ch.vorburger.exec.ManagedProcess;
@@ -50,6 +51,9 @@ public class RPMBuilder extends AbstractMojo {
 
     @Component
     private MavenProject project;
+
+    @Component
+    private MavenProjectHelper projectHelper;
 
     @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true, readonly = true)
     private File workingDirectory;
@@ -163,8 +167,9 @@ public class RPMBuilder extends AbstractMojo {
                     archive.closeArchiveEntry();
                 }
             }
-            project.getArtifact().setFile(output);
-
+            // Attach the modified spec file as the primary output and the assembled zip file as secondary.
+            project.getArtifact().setFile(targetSpecFile.toFile());
+            projectHelper.attachArtifact(project, "zip", output);
         } catch (IOException | ArchiveException e) {
             throw new MojoExecutionException(e);
         }

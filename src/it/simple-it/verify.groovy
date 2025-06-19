@@ -2,8 +2,10 @@ import java.util.zip.ZipFile
 
 def buildLog = new File(basedir, 'build.log')
 def zipFile = new File(basedir, "target/simple-it-1.0-SNAPSHOT-bin.zip")
+def pomFile = new File( basedir, 'pom.xml' )
 
 assert zipFile.exists()
+assert pomFile.text.contains("<packaging>spec</packaging>")
 
 List<String> entries = new ArrayList()
 new ZipFile(zipFile).entries().each {

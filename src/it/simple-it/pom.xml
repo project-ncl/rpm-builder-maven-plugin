@@ -6,7 +6,7 @@
   <groupId>org.jboss.pnc.it</groupId>
   <artifactId>simple-it</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>rpm</packaging>
+  <packaging>spec</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
