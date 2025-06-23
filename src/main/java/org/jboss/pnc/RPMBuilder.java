@@ -1,5 +1,6 @@
 package org.jboss.pnc;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.io.File;
@@ -141,7 +142,8 @@ public class RPMBuilder extends AbstractMojo {
                 final GroovyShell shell = new GroovyShell();
                 final Script script = shell.parse(groovyPatch);
                 script.setProperty("wrappedBuild", wrappedBuild);
-                script.setProperty("meadalpha", meadAlpha);
+                // Its possible there might be no delimiter so set the macro to 'empty'
+                script.setProperty("meadalpha", isEmpty(meadAlpha) ? "%{nil}" : meadAlpha);
                 script.setProperty("meadrel", meadRel);
                 script.setProperty("meadversion", meadVersion);
                 script.setProperty("serial", serial);
@@ -156,7 +158,7 @@ public class RPMBuilder extends AbstractMojo {
                         + meadAlpha
                         + meadRel;
 
-                getLog().info("Generating changelog with title '" + title + "'' and message " + changeLog.message);
+                getLog().info("Generating changelog with title '" + title + "' and message " + changeLog.message);
 
                 List<String> specLines = Files.readAllLines(targetSpecFile);
                 List<String> newSpecLines = new ArrayList<>();
