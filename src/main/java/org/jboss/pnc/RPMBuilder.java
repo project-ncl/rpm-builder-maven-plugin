@@ -1,16 +1,20 @@
 package org.jboss.pnc;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,6 +38,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.commonjava.maven.ext.core.impl.Version;
 import org.slf4j.event.Level;
 
 import ch.vorburger.exec.ManagedProcess;
@@ -73,6 +78,9 @@ public class RPMBuilder extends AbstractMojo {
     @Parameter(defaultValue = "false", property = "skip")
     private boolean skip;
 
+    @Parameter(property = "changeLog")
+    private Changelog changeLog;
+
     /**
      * Custom extra macros to pass through. For example:
      * <macros>
@@ -97,6 +105,27 @@ public class RPMBuilder extends AbstractMojo {
         //noinspection ResultOfMethodCallIgnored
         specDir.mkdirs();
 
+        String serial = Integer.toString(Version.getIntegerBuildNumber(project.getVersion()));
+        String wrappedBuild = project.getProperties().getProperty("wrappedBuild");
+        String meadRel = ".1";
+        String meadVersion = null;
+        String meadAlpha = null;
+        if (wrappedBuild == null) {
+            getLog().error(
+                    "Unable to find wrappedBuild property in project properties. Define this property to denote the version of the build to be wrapped inside the RPM");
+            if (changeLog != null && changeLog.generate) {
+                throw new MojoExecutionException("Unable to find wrappedBuild property");
+            }
+        } else {
+            meadVersion = Version.getMMM(wrappedBuild);
+            meadAlpha = Version.getQualifierWithDelim(wrappedBuild).replace("-", "_");
+        }
+        getLog().info(
+                "With project " + project.getName() + " found project.version " + project.getVersion()
+                        + " and properties wrappedBuild=" + wrappedBuild
+                        + " meadalpha=" + meadAlpha + " meadrel=" + meadRel
+                        + " meadversion=" + meadVersion + " serial=" + serial);
+
         try (Stream<Path> walk = Files.walk(workingDirectory.toPath(), 1)) {
 
             List<Path> specFiles = walk.filter(f -> f.getFileName().toString().endsWith(".spec")).toList();
@@ -112,7 +141,38 @@ public class RPMBuilder extends AbstractMojo {
                 getLog().info("Using groovy script: " + groovyPatch);
                 final GroovyShell shell = new GroovyShell();
                 final Script script = shell.parse(groovyPatch);
+                script.setProperty("wrappedBuild", wrappedBuild);
+                // Its possible there might be no delimiter so set the macro to 'empty'
+                script.setProperty("meadalpha", isEmpty(meadAlpha) ? "%{nil}" : meadAlpha);
+                script.setProperty("meadrel", meadRel);
+                script.setProperty("meadversion", meadVersion);
+                script.setProperty("serial", serial);
                 script.run();
+            }
+            if (changeLog != null && changeLog.generate) {
+                LocalDateTime dt = LocalDateTime.now();
+                String title = "* " + dt.format(DateTimeFormatter.ofPattern("E MMM dd yyyy")) + " "
+                        + changeLog.email + " - "
+                        + meadVersion + "-"
+                        + serial
+                        + meadAlpha
+                        + meadRel;
+
+                getLog().info("Generating changelog with title '" + title + "' and message " + changeLog.message);
+
+                List<String> specLines = Files.readAllLines(targetSpecFile);
+                List<String> newSpecLines = new ArrayList<>();
+                specLines.forEach(line -> {
+                    if (line.startsWith("%changelog")) {
+                        newSpecLines.add(line);
+                        newSpecLines.add(title);
+                        newSpecLines.add(changeLog.message);
+                        newSpecLines.add("");
+                    } else {
+                        newSpecLines.add(line);
+                    }
+                });
+                Files.write(targetSpecFile, newSpecLines, Charset.defaultCharset());
             }
 
             ManagedProcessBuilder pb = new ManagedProcessBuilder("rpmbuild")
@@ -174,5 +234,23 @@ public class RPMBuilder extends AbstractMojo {
             throw new MojoExecutionException(e);
         }
 
+    }
+
+    public static class Changelog {
+        public boolean generate;
+        public String email = "project-ncl@redhat.com";
+        public String message = "- New Release";
+
+        public Changelog() {
+        }
+
+        @Override
+        public String toString() {
+            return "Changelog{" +
+                    "generate=" + generate +
+                    ", email='" + email + '\'' +
+                    ", message='" + message + '\'' +
+                    '}';
+        }
     }
 }

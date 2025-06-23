@@ -16,7 +16,7 @@ new ZipFile(zipFile).entries().each {
 assert entries.size() == 2
 assert entries.stream().sorted().toArray().toString().contains("[apache-sshd-1.0-2.src.rpm, noarch/apache-sshd-1.0-2.noarch.rpm]")
 assert buildLog.text.contains("Using groovy script")
-
+assert buildLog.text.contains("Unable to find wrappedBuild property in project properties. Define this property to denote the version of the build to be wrapped inside the RPM")
 def pomFile = new File( basedir, 'pom.xml' )
 def pom = new XmlSlurper().parse( pomFile )
 def deploydir = new File(localRepositoryPath.toString() + "/..//local-deploy", "${pom.groupId.text().replace('.', '/')}/${pom.artifactId.text()}/${pom.version.text()}" )

@@ -24,7 +24,7 @@
           <groovyPatch>
             def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
             def original_version = "${sshd}".replaceAll(".redhat.*", "")
-            println "I am building version ${project.version} of ${project.name} with ${sshd} at ${new Date()}"
+            println "I am building version ${project.version} of ${project.name} with ${sshd} and ${original_version}"
 
             // Note the spec file is always copied to target/spec first so modify it there.
             def spec = new File("${project.build.directory}/spec/apache-sshd.spec")
