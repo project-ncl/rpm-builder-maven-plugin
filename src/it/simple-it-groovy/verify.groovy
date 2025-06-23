@@ -12,6 +12,6 @@ new ZipFile(zipFile).entries().each {
 }
 
 assert entries.size() == 2
-assert entries.stream().sorted().toArray().toString().contains("[apache-sshd-1.4.18.SP13-2.src.rpm, noarch/apache-sshd-1.4.18.SP13-2.noarch.rpm]")
+assert entries.stream().sorted().toArray().toString().contains("[apache-sshd-1.4.18-2.SP13_redhat_00003.1.src.rpm, noarch/apache-sshd-1.4.18-2.SP13_redhat_00003.1.noarch.rpm]")
 assert buildLog.text.contains("Using groovy script")
 assert specfile.text.contains("""unknown@dummy.com - 1.4.18-2.SP13_redhat_00003.1\n- New Release""")

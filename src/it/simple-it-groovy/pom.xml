@@ -26,18 +26,16 @@
             <email>unknown@dummy.com</email>
           </changeLog>
           <groovyPatch>
-            def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
-            def original_version = "${wrappedBuild}".replaceAll(".redhat.*", "")
-            println "I am building version ${project.version} of ${project.name} with ${wrappedBuild} with ${original_version}"
-
-            println "${project.build.directory}/spec/apache-sshd.spec"
+            println "I am building version ${project.version} with serial ${serial} with wrappedBuild ${wrappedBuild} with meadalpha ${meadalpha}"
             // Note the spec file is always copied to target/spec first so modify it there.
             def spec = new File("${project.build.directory}/spec/apache-sshd.spec")
             def contents = spec.getText('UTF-8')
 
             contents = """
-%global meadversion ${original_version}
-%global serial $serial
+%global meadversion ${meadversion}
+%global meadalpha ${meadalpha}
+%global meadrel ${meadrel}
+%global serial ${serial}
 %define maven_version ${wrappedBuild}
 
 """ + contents

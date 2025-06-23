@@ -104,14 +104,26 @@ public class RPMBuilder extends AbstractMojo {
         //noinspection ResultOfMethodCallIgnored
         specDir.mkdirs();
 
+        String serial = Integer.toString(Version.getIntegerBuildNumber(project.getVersion()));
         String wrappedBuild = project.getProperties().getProperty("wrappedBuild");
+        String meadRel = ".1";
+        String meadVersion = null;
+        String meadAlpha = null;
         if (wrappedBuild == null) {
             getLog().error(
                     "Unable to find wrappedBuild property in project properties. Define this property to denote the version of the build to be wrapped inside the RPM");
             if (changeLog != null && changeLog.generate) {
                 throw new MojoExecutionException("Unable to find wrappedBuild property");
             }
+        } else {
+            meadVersion = Version.getMMM(wrappedBuild);
+            meadAlpha = Version.getQualifierWithDelim(wrappedBuild).replace("-", "_");
         }
+        getLog().info(
+                "With project " + project.getName() + " found project.version " + project.getVersion()
+                        + " and properties wrappedBuild=" + wrappedBuild
+                        + " meadalpha=" + meadAlpha + " meadrel=" + meadRel
+                        + " meadversion=" + meadVersion + " serial=" + serial);
 
         try (Stream<Path> walk = Files.walk(workingDirectory.toPath(), 1)) {
 
@@ -128,16 +140,21 @@ public class RPMBuilder extends AbstractMojo {
                 getLog().info("Using groovy script: " + groovyPatch);
                 final GroovyShell shell = new GroovyShell();
                 final Script script = shell.parse(groovyPatch);
+                script.setProperty("wrappedBuild", wrappedBuild);
+                script.setProperty("meadalpha", meadAlpha);
+                script.setProperty("meadrel", meadRel);
+                script.setProperty("meadversion", meadVersion);
+                script.setProperty("serial", serial);
                 script.run();
             }
             if (changeLog != null && changeLog.generate) {
-                String serial = project.getVersion().split(".*redhat-0+")[1];
                 LocalDateTime dt = LocalDateTime.now();
                 String title = "* " + dt.format(DateTimeFormatter.ofPattern("E MMM dd yyyy")) + " "
                         + changeLog.email + " - "
-                        + Version.getMMM(wrappedBuild) + "-"
+                        + meadVersion + "-"
                         + serial
-                        + Version.getQualifierWithDelim(wrappedBuild).replace("-", "_") + ".1";
+                        + meadAlpha
+                        + meadRel;
 
                 getLog().info("Generating changelog with title '" + title + "'' and message " + changeLog.message);
 

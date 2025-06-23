@@ -1,6 +1,6 @@
 Name:           apache-sshd
 Version:        %{meadversion}
-Release:        %{serial}
+Release:        %{serial}%{meadalpha}%{meadrel}
 Epoch:          0
 Summary:        Apache Mina SSHD
 Group:          Development/Java
