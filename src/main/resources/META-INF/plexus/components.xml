@@ -11,7 +11,7 @@
           <install>org.apache.maven.plugins:maven-compile-plugin:compile</install>
           <package>org.jboss.pnc:rpm-builder-maven-plugin:package</package>
           <install>org.apache.maven.plugins:maven-install-plugin:install</install>
-          <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
+          <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy, org.jboss.pnc:rpm-builder-maven-plugin:deploy</deploy>
         </phases>
       </configuration>
     </component>

@@ -7,16 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +26,11 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.commonjava.maven.ext.core.impl.Version;
 import org.slf4j.event.Level;
@@ -52,19 +46,13 @@ import groovy.lang.Script;
  * Run rpmbuild and package the results.
  */
 @Mojo(name = "package", defaultPhase = LifecyclePhase.PACKAGE)
-public class RPMBuilder extends AbstractMojo {
-
-    @Component
-    private MavenProject project;
+public class RPMBuilder extends BaseMojo {
 
     @Component
     private MavenProjectHelper projectHelper;
 
     @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true, readonly = true)
     private File workingDirectory;
-
-    @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true, readonly = true)
-    private File outputDirectory;
 
     /**
      * Custom groovy script to run against the spec file.
@@ -73,10 +61,10 @@ public class RPMBuilder extends AbstractMojo {
     private String groovyPatch;
 
     /**
-     * Whether to skip the plugin
+     * Whether to attach the RPMs in a zip
      */
-    @Parameter(defaultValue = "false", property = "skip")
-    private boolean skip;
+    @Parameter(defaultValue = "false", property = "attachZip")
+    private boolean attachZip;
 
     @Parameter(property = "changeLog")
     private Changelog changeLog;
@@ -94,10 +82,6 @@ public class RPMBuilder extends AbstractMojo {
     public void execute()
             throws MojoExecutionException {
 
-        if (skip) {
-            getLog().info("Skipping RPM plugin");
-            return;
-        }
         File buildDir = new File(outputDirectory, "build");
         File specDir = new File(outputDirectory, "spec");
         //noinspection ResultOfMethodCallIgnored
@@ -201,35 +185,30 @@ public class RPMBuilder extends AbstractMojo {
                 throw new MojoExecutionException("Process exited with code " + result);
             }
 
-            final Collection<Path> paths = new ArrayList<>();
-            Files.walkFileTree(outputDirectory.toPath(), new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
-                    if (file.getFileName().toString().toLowerCase().endsWith(".rpm")) {
-                        paths.add(file);
+            // TODO: Remove?
+            if (attachZip) {
+                List<File> rpms = findRPMs(outputDirectory.toPath());
+                File output = new File(outputDirectory, project.getArtifactId() + "-" + project.getVersion() + ".zip");
+                try (final OutputStream out = Files.newOutputStream(output.toPath());
+                        final ZipArchiveOutputStream archive = new ArchiveStreamFactory()
+                                .createArchiveOutputStream(ArchiveStreamFactory.ZIP, out)) {
+                    archive.setMethod(ZipEntry.DEFLATED);
+                    archive.setLevel(Deflater.BEST_COMPRESSION);
+
+                    for (File path : rpms) {
+                        String entryName = FilenameUtils
+                                .normalize(outputDirectory.toPath().relativize(path.toPath()).toString(), true);
+                        archive.putArchiveEntry(new ZipArchiveEntry(path, entryName));
+                        IOUtils.copy(Files.newInputStream(path.toPath()), archive);
+                        archive.closeArchiveEntry();
                     }
-                    return FileVisitResult.CONTINUE;
                 }
-            });
-
-            File output = new File(outputDirectory, project.getArtifactId() + "-" + project.getVersion() + "-bin.zip");
-            try (final OutputStream out = Files.newOutputStream(output.toPath());
-                    final ZipArchiveOutputStream archive = new ArchiveStreamFactory()
-                            .createArchiveOutputStream(ArchiveStreamFactory.ZIP, out)) {
-                archive.setMethod(ZipEntry.DEFLATED);
-                archive.setLevel(Deflater.BEST_COMPRESSION);
-
-                for (Path path : paths) {
-                    String entryName = FilenameUtils
-                            .normalize(outputDirectory.toPath().relativize(path).toString(), true);
-                    archive.putArchiveEntry(new ZipArchiveEntry(path.toFile(), entryName));
-                    IOUtils.copy(Files.newInputStream(path), archive);
-                    archive.closeArchiveEntry();
-                }
+                getLog().info("Attaching " + output.getName() + " to project containing " + rpms.size() + " rpms.");
+                // Attach the assembled zip file as secondary artifact.
+                projectHelper.attachArtifact(project, "zip", output);
             }
-            // Attach the modified spec file as the primary output and the assembled zip file as secondary.
+            // Attach the modified spec file as the primary output.
             project.getArtifact().setFile(targetSpecFile.toFile());
-            projectHelper.attachArtifact(project, "zip", output);
         } catch (IOException | ArchiveException e) {
             throw new MojoExecutionException(e);
         }
