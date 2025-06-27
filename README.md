@@ -19,7 +19,13 @@ This requires the `rpmbuild` binary to be installed in the host system. It shoul
 * A `macros` configuration map may be used to pass additional macro defines to the `rpmbuild` command.
 * A `changeLog` configuration object may be used to trigger change log generation. By default, email is set to `project-ncl@redhat.com` and message is set to `- New Release`.
 
-Then the plugin sets up the correct directories and runs `rpmbuild -ba` generating the source and binary RPMs into the target directory. Finally, it will package those RPMs into a zip which will be attached to the build.
+Then the plugin sets up the correct directories and runs `rpmbuild -ba` generating the source and binary RPMs into the target directory. 
+
+* The rpms can be packaged into a zip and attached to the build. This is disabled by default and may be enabled via `attachZip`
+
+The plugin can deploy the RPMs to a repository. This is controlled by `rpmDeploymentRepository` which supports the same format as `altDeploymentRepository`.
+
+* The plugin deployment may be skipped with `rpm.deploy.skip`
 
 A complete example:
 

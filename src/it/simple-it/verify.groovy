@@ -1,7 +1,7 @@
 import java.util.zip.ZipFile
 
 def buildLog = new File(basedir, 'build.log')
-def zipFile = new File(basedir, "target/simple-it-1.0-SNAPSHOT-bin.zip")
+def zipFile = new File(basedir, "target/simple-it-1.0-SNAPSHOT.zip")
 def pomFile = new File( basedir, 'pom.xml' )
 
 assert zipFile.exists()

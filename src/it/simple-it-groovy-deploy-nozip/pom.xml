@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.jboss.pnc.it</groupId>
+  <artifactId>simple-it-groovy-deploy</artifactId>
+  <version>1.0.0.redhat-00002</version>
+  <packaging>spec</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <sshd>1.0.redhat.00003</sshd>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.1.4</version>
+      </plugin>
+      <plugin>
+        <groupId>@project.groupId@</groupId>
+        <artifactId>@project.artifactId@</artifactId>
+        <version>@project.version@</version>
+        <extensions>true</extensions>
+        <configuration>
+          <groovyPatch>
+            def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
+            def original_version = "${sshd}".replaceAll(".redhat.*", "")
+            println "I am building version ${project.version} of ${project.name} with ${sshd} and ${original_version}"
+
+            // Note the spec file is always copied to target/spec first so modify it there.
+            def spec = new File("${project.build.directory}/spec/apache-sshd.spec")
+            def contents = spec.getText('UTF-8')
+
+            contents = """
+%global meadversion ${original_version}
+%global serial $serial
+%define maven_version ${sshd}
+
+""" + contents
+            spec.write(contents)
+          </groovyPatch>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
