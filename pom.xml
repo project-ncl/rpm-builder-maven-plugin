@@ -60,10 +60,10 @@
     <maven.compiler.target>17</maven.compiler.target>
     <maven.version>3.9.5</maven.version>
 
-    <jboss.releases.repo.id>sonatype-nexus-staging</jboss.releases.repo.id>
-    <jboss.releases.repo.url>https://oss.sonatype.org/service/local/staging/deploy/maven2</jboss.releases.repo.url>
-    <jboss.snapshots.repo.id>sonatype-nexus-snapshots</jboss.snapshots.repo.id>
-    <jboss.snapshots.repo.url>https://oss.sonatype.org/content/repositories/snapshots</jboss.snapshots.repo.url>
+    <jboss.releases.repo.id>central</jboss.releases.repo.id>
+    <jboss.releases.repo.url>https://ossrh-staging-api.central.sonatype.com/service/local/</jboss.releases.repo.url>
+    <jboss.snapshots.repo.id>central</jboss.snapshots.repo.id>
+    <jboss.snapshots.repo.url>https://central.sonatype.com/repository/maven-snapshots</jboss.snapshots.repo.url>
 
     <selectedTest>*</selectedTest>
   </properties>
@@ -214,6 +214,15 @@
             <phase>site-deploy</phase>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.8.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+        </configuration>
       </plugin>
     </plugins>
   </build>
