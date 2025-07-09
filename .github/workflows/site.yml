@@ -1,0 +1,32 @@
+# This workflow will create and deploy a site on new tag creation
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Site
+
+on:
+  create:
+
+jobs:
+  build:
+    if: ${{ startsWith(github.ref, 'refs/tags/rpm-builder-maven-plugin-') }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cache local Maven repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 17
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version:  3.9.8
+    - name: Deploy Snapshot
+      run: mvn -B -V site site:stage scm-publish:publish-scm

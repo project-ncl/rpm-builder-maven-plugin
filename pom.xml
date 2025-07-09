@@ -14,7 +14,9 @@
   <packaging>maven-plugin</packaging>
 
   <name>rpm-builder-maven-plugin</name>
+  <description>Maven plugin to assist running rpmbuild and packaging maven artifacts into a RPM.</description>
   <url>https://github.com/project-ncl/rpm-builder-maven-plugin</url>
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -29,7 +31,6 @@
       <email>ncross@redhat.com</email>
     </developer>
   </developers>
-
   <prerequisites>
     <maven>${maven.version}</maven>
   </prerequisites>
@@ -39,6 +40,19 @@
     <tag>rpm-builder-maven-plugin-1.1</tag>
     <url>https://github.com/project-ncl/rpm-builder-maven-plugin</url>
   </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/project-ncl/rpm-builder-maven-plugin/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>gh-pages</id>
+      <name>github pages site</name>
+      <url>scm:git:https://github.com/project-ncl/rpm-builder-maven-plugin</url>
+    </site>
+  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,7 +109,6 @@
       <version>3.15.1</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>org.commonjava.maven.ext</groupId>
       <artifactId>pom-manipulation-core</artifactId>
@@ -123,7 +136,7 @@
             </sortPom>
           </pom>
           <java>
-            <removeUnusedImports />
+            <removeUnusedImports/>
             <importOrder>
               <order>java,javax,jakarta,org,com</order>
             </importOrder>
@@ -152,9 +165,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <configuration>
-          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-        </configuration>
         <executions>
           <execution>
             <id>mojo-descriptor</id>
@@ -170,6 +180,41 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <skipDeploy>true</skipDeploy>
+          <attach>false</attach>
+          <outputEncoding>${project.build.sourceEncoding}</outputEncoding>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-module-markdown</artifactId>
+            <version>2.0.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <content>${project.reporting.outputDirectory}</content>
+          <scmBranch>gh-pages</scmBranch>
+          <serverId>github</serverId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>scm-publish</id>
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+            <phase>site-deploy</phase>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -179,6 +224,22 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-report-plugin</artifactId>
         <version>3.15.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.9.0</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>summary</report>
+              <report>scm</report>
+              <report>issue-management</report>
+              <report>licenses</report>
+              <report>plugins</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
     </plugins>
   </reporting>
