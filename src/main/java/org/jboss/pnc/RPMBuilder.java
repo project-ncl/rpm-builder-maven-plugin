@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 
-import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -209,7 +208,7 @@ public class RPMBuilder extends BaseMojo {
             }
             // Attach the modified spec file as the primary output.
             project.getArtifact().setFile(targetSpecFile.toFile());
-        } catch (IOException | ArchiveException e) {
+        } catch (IOException e) {
             throw new MojoExecutionException(e);
         }
 
