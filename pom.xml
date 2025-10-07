@@ -112,7 +112,7 @@
     <dependency>
       <groupId>org.commonjava.maven.ext</groupId>
       <artifactId>pom-manipulation-core</artifactId>
-      <version>4.20</version>
+      <version>4.22</version>
       <exclusions>
         <exclusion>
           <!-- Only want code from the core module itself -->
