@@ -31,9 +31,7 @@
       <email>ncross@redhat.com</email>
     </developer>
   </developers>
-  <prerequisites>
-    <maven>${maven.version}</maven>
-  </prerequisites>
+
   <scm>
     <connection>scm:git:https://github.com/project-ncl/rpm-builder-maven-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:project-ncl/rpm-builder-maven-plugin.git</developerConnection>
