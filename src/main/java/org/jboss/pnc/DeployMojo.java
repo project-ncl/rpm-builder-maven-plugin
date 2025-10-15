@@ -9,9 +9,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -34,13 +35,13 @@ public class DeployMojo extends BaseMojo {
 
     private static final Pattern ALT_REPO_SYNTAX_PATTERN = Pattern.compile("(.+?)::(.+)");
 
-    @Component
+    @Inject
     protected MavenSession session;
 
-    @Component
+    @Inject
     private RepositorySystem repositorySystem;
 
-    @Component
+    @Inject
     private ChecksumAlgorithmFactorySelector checksumAlgorithmFactorySelector;
 
     /**
@@ -48,7 +49,7 @@ public class DeployMojo extends BaseMojo {
      * which uses DefaultRepositoryLayoutProvider which uses RepositoryLayoutFactory which is a
      * Maven2RepositoryLayoutFactory. By overriding the layout provider, we can change how the files are deployed.
      */
-    @Component
+    @Inject
     private RepositoryLayoutProvider repositoryLayoutProvider;
 
     /**

@@ -10,14 +10,15 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 public abstract class BaseMojo extends AbstractMojo {
 
-    @Component
+    @Inject
     protected MavenProject project;
 
     @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true, readonly = true)

@@ -16,9 +16,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
+
+import javax.inject.Inject;
 
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -26,20 +30,15 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectHelper;
 import org.commonjava.maven.ext.core.impl.Version;
-import org.slf4j.event.Level;
 
-import ch.vorburger.exec.ManagedProcess;
-import ch.vorburger.exec.ManagedProcessBuilder;
-import ch.vorburger.exec.OutputStreamLogDispatcher;
-import ch.vorburger.exec.OutputStreamType;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import io.smallrye.common.process.ProcessBuilder;
 
 /**
  * Run rpmbuild and package the results.
@@ -47,7 +46,7 @@ import groovy.lang.Script;
 @Mojo(name = "package", defaultPhase = LifecyclePhase.PACKAGE)
 public class RPMBuilder extends BaseMojo {
 
-    @Component
+    @Inject
     private MavenProjectHelper projectHelper;
 
     @Parameter(defaultValue = "${project.basedir}", property = "workingDirectory", required = true, readonly = true)
@@ -158,30 +157,45 @@ public class RPMBuilder extends BaseMojo {
                 Files.write(targetSpecFile, newSpecLines, Charset.defaultCharset());
             }
 
-            ManagedProcessBuilder pb = new ManagedProcessBuilder("rpmbuild")
-                    .addArgument("--define=_topdir " + workingDirectory.getAbsolutePath(), false)
-                    .addArgument("--define=_sourcedir " + workingDirectory.getAbsolutePath(), false)
-                    .addArgument("--define=_rpmdir " + outputDirectory.getAbsolutePath(), false)
-                    .addArgument("--define=_srcrpmdir " + outputDirectory.getAbsolutePath(), false)
-                    .addArgument("--define=_specdir " + specDir.getAbsolutePath(), false)
-                    .addArgument("--define=_builddir " + buildDir.getAbsolutePath(), false);
+            List<String> args = new ArrayList<>();
+            args.add("--define=_topdir " + workingDirectory.getAbsolutePath());
+            args.add("--define=_sourcedir " + workingDirectory.getAbsolutePath());
+            args.add("--define=_rpmdir " + outputDirectory.getAbsolutePath());
+            args.add("--define=_srcrpmdir " + outputDirectory.getAbsolutePath());
+            args.add("--define=_specdir " + specDir.getAbsolutePath());
+            args.add("--define=_builddir " + buildDir.getAbsolutePath());
+            macros.forEach((key, value) -> args.add("--define=" + key + " " + value));
+            args.add("-ba");
+            args.add(targetSpecFile.toAbsolutePath().toString());
 
-            macros.forEach((key, value) -> pb.addArgument("--define=" + key + " " + value, false));
+            // Change delimiter for shell copying/debugging.
+            getLog().info(
+                    "About to execute:\trpmbuild "
+                            + args.stream().map(a -> {
+                                if (a.contains("=")) {
+                                    return a.replaceAll("=", "='") + "'";
+                                } else {
+                                    return a;
+                                }
+                            }).collect(Collectors.joining(" ")));
 
-            pb.addArgument("-ba")
-                    .addArgument(targetSpecFile.toAbsolutePath().toString())
-                    .setOutputStreamLogDispatcher(new OutputStreamLogDispatcher() {
-                        @Override
-                        public Level dispatch(OutputStreamType o, String i) {
-                            return Level.INFO;
-                        }
+            AtomicReference<Integer> exitCode = new AtomicReference<>(0);
+            ProcessBuilder.newBuilder("rpmbuild")
+                    .directory(workingDirectory.toPath())
+                    .arguments(args)
+                    .exitCodeChecker(ec -> {
+                        exitCode.set(ec);
+                        return true;
                     })
-                    .setWorkingDirectory(workingDirectory);
+                    .output()
+                    .consumeLinesWith(8192, getLog()::info)
+                    .error()
+                    .logOnSuccess(true)
+                    .consumeLinesWith(8192, getLog()::error)
+                    .run();
 
-            ManagedProcess p = pb.build().start();
-            int result = p.waitForExit();
-            if (result != 0) {
-                throw new MojoExecutionException("Process exited with code " + result);
+            if (exitCode.get() != 0) {
+                throw new MojoExecutionException("Process exited with code " + exitCode.get());
             }
 
             // TODO: Remove?

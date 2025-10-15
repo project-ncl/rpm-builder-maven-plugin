@@ -68,10 +68,11 @@
 
   <dependencies>
     <dependency>
-      <groupId>ch.vorburger.exec</groupId>
-      <artifactId>exec</artifactId>
-      <version>3.3.2</version>
+      <groupId>io.smallrye.common</groupId>
+      <artifactId>smallrye-common-process</artifactId>
+      <version>2.13.9</version>
     </dependency>
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
@@ -126,7 +127,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.44.2</version>
+        <version>3.0.0</version>
         <configuration>
           <pom>
             <sortPom>
@@ -136,7 +137,7 @@
           <java>
             <removeUnusedImports/>
             <importOrder>
-              <order>java,javax,jakarta,org,com</order>
+              <file>java-import-order.txt</file>
             </importOrder>
             <eclipse>
               <file>java-formatter.xml</file>
