@@ -25,7 +25,7 @@ A `changeLog` configuration object may be used to trigger change log generation.
 
 ## Deployment
 
-The plugin can deploy the RPMs to a repository. This is controlled by `rpmDeploymentRepository` which supports the same format as `altDeploymentRepository`. The plugin deployment may be skipped with `rpm.deploy.skip`
+The plugin can deploy the RPMs to a repository. This is controlled by `rpmDeploymentRepository` which supports the same format as `altDeploymentRepository`. The plugin deployment may be skipped with `rpm.deploy.skip`. If `rpmDeploymentRepository` is not set it will fall back to the value of the user property `altDeploymentRepository`.
 
 
 ## Examples

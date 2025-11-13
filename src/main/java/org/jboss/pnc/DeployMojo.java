@@ -53,7 +53,8 @@ public class DeployMojo extends BaseMojo {
     private RepositoryLayoutProvider repositoryLayoutProvider;
 
     /**
-     * Target URI deployment repository. This should support the same format as altDeploymentRepository.
+     * Target URI deployment repository. This should support the same format as altDeploymentRepository. Falls back
+     * to the value of the user property altDeploymentRepository.
      */
     @Parameter(property = "rpmDeploymentRepository")
     private String rpmDeploymentRepository;
@@ -70,8 +71,12 @@ public class DeployMojo extends BaseMojo {
             getLog().info("Skipping RPM deployment");
             return;
         } else if (isEmpty(rpmDeploymentRepository)) {
-            throw new MojoExecutionException(
-                    "No repositoryId or rpmDeploymentRepository specified (or skip via '-Drpm.deploy.skip')");
+            String altDeploymentRepository = System.getProperty("altDeploymentRepository");
+            if (isEmpty(altDeploymentRepository)) {
+                throw new MojoExecutionException(
+                        "No rpmDeploymentRepository or altDeploymentRepository specified (or skip via '-Drpm.deploy.skip')");
+            }
+            rpmDeploymentRepository = altDeploymentRepository;
         }
 
         try {
