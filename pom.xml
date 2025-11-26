@@ -48,7 +48,7 @@
     <site>
       <id>gh-pages</id>
       <name>github pages site</name>
-      <url>scm:git:https://github.com/project-ncl/rpm-builder-maven-plugin</url>
+      <url>scm:git:git@github.com:project-ncl/rpm-builder-maven-plugin.git</url>
     </site>
   </distributionManagement>
 
