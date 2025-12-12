@@ -34,7 +34,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectHelper;
-import org.commonjava.maven.ext.core.impl.Version;
+import org.jboss.pnc.mavenmanipulator.core.impl.Version;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -190,11 +190,11 @@ public class RPMBuilder extends BaseMojo {
                     .output()
                     .consumeLinesWith(8192, getLog()::info)
                     .error()
-                    .logOnSuccess(true)
-                    .consumeLinesWith(8192, getLog()::error)
+                    .consumeLinesWith(8192, getLog()::info)
                     .run();
 
             if (exitCode.get() != 0) {
+                getLog().error("Error building RPM");
                 throw new MojoExecutionException("Process exited with code " + exitCode.get());
             }
 

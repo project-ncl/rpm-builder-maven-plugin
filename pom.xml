@@ -109,9 +109,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.maven.ext</groupId>
+      <groupId>org.jboss.pnc.maven-manipulator</groupId>
       <artifactId>pom-manipulation-core</artifactId>
-      <version>4.22</version>
+      <version>5.0</version>
       <exclusions>
         <exclusion>
           <!-- Only want code from the core module itself -->
@@ -135,7 +135,7 @@
             </sortPom>
           </pom>
           <java>
-            <removeUnusedImports />
+            <removeUnusedImports/>
             <importOrder>
               <file>java-import-order.txt</file>
             </importOrder>
