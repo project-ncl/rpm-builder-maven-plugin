@@ -56,7 +56,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <maven.version>3.9.11</maven.version>
+    <maven.version>3.9.12</maven.version>
 
     <jboss.releases.repo.id>central</jboss.releases.repo.id>
     <jboss.releases.repo.url>https://ossrh-staging-api.central.sonatype.com/service/local/</jboss.releases.repo.url>
