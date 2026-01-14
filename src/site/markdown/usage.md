@@ -18,9 +18,10 @@ The plugin can run a groovy script (`groovyScript`) to perform patches to a RPM 
 
 ## Miscellaneous
 
-The rpms can be packaged into a zip and attached to the build. This is disabled by default and may be enabled via `attachZip`
-A `macros` configuration map may be used to pass additional macro defines to the `rpmbuild` command.
-A `changeLog` configuration object may be used to trigger change log generation. By default, email is set to `project-ncl@redhat.com` and message is set to `- New Release`.
+* The rpms can be packaged into a zip and attached to the build. This may be configured via `attachZip`.
+* A `macros` configuration map may be used to pass additional macro defines to the `rpmbuild` command.
+* A `changeLog` configuration object may be used to trigger change log generation. By default, email is set to `project-ncl@redhat.com` and message is set to `- New Release`.
+* If the `installRPMs` is set to true then it will use `rpm2cpio` and `cpio` to install any `.noarch.rpm` found in `${project.build.directory}/dependency`. This directory has been chosen as it is the default directory used by the [unpack plugin](https://maven.apache.org/plugins/maven-dependency-plugin/unpack-mojo.html) 
 
 
 ## Deployment

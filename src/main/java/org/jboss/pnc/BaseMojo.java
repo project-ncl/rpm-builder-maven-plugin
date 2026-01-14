@@ -26,10 +26,14 @@ public abstract class BaseMojo extends AbstractMojo {
 
     protected List<File> findRPMs(Path searchDirectory) throws IOException {
         final List<File> rpms = new ArrayList<>();
+        final File dependencyDirectory = new File(outputDirectory, "dependency");
         Files.walkFileTree(searchDirectory, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
-                if (file.getFileName().toString().toLowerCase().endsWith(".rpm")) {
+                // If RPMs have been downloaded via https://maven.apache.org/plugins/maven-dependency-plugin/unpack-mojo.html the
+                // default directory is target/dependency so we should ignore that.
+                if (!file.toString().startsWith(dependencyDirectory.toString())
+                        && file.getFileName().toString().toLowerCase().endsWith(".rpm")) {
                     rpms.add(file.toFile());
                 }
                 return FileVisitResult.CONTINUE;
