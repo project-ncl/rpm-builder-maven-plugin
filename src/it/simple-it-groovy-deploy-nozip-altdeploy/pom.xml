@@ -4,13 +4,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jboss.pnc.it</groupId>
-  <artifactId>simple-it-groovy-deploy</artifactId>
+  <artifactId>simple-it-groovy-deploy-nozip-altdeploy</artifactId>
   <version>1.0.0.redhat-00002</version>
   <packaging>spec</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <sshd>1.0.redhat.00003</sshd>
+    <wrappedBuild>1.0.redhat.00003</wrappedBuild>
   </properties>
 
   <build>
@@ -26,10 +26,12 @@
         <version>@project.version@</version>
         <extensions>true</extensions>
         <configuration>
+          <attachZip>false</attachZip>
+          <installRPMs>true</installRPMs>
           <groovyPatch>
             def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
-            def original_version = "${sshd}".replaceAll(".redhat.*", "")
-            println "I am building version ${project.version} of ${project.name} with ${sshd} and ${original_version}"
+            def original_version = "${wrappedBuild}".replaceAll(".redhat.*", "")
+            println "I am building version ${project.version} of ${project.name} with ${wrappedBuild} and ${original_version}"
 
             // Note the spec file is always copied to target/spec first so modify it there.
             def spec = new File("${project.build.directory}/spec/apache-sshd.spec")
@@ -38,7 +40,7 @@
             contents = """
 %global meadversion ${original_version}
 %global serial $serial
-%define maven_version ${sshd}
+%define maven_version ${wrappedBuild}
 
 """ + contents
             spec.write(contents)

@@ -61,18 +61,40 @@ public class RPMBuilder extends BaseMojo {
     /**
      * Whether to attach the RPMs in a zip
      */
-    @Parameter(defaultValue = "false", property = "attachZip")
-    private boolean attachZip;
+    @Parameter(defaultValue = "true", property = "attachZip")
+    private boolean attachZip = true;
 
+    /**
+     * Whether to generate a changeLog. For example:
+     *
+     * <pre>
+     * {@code
+     * <changeLog>
+     *    <generate>true</generate>
+     *    <email>my-email@arandomcompany.com</email>
+     *    <message> - MyMessageSuffix</message
+     * </changeLog>
+     * }</pre>
+     */
     @Parameter(property = "changeLog")
     private Changelog changeLog;
 
     /**
+     * Whether to install any noarch RPMs found in the <code>${project.build.directory}/dependency</code> directory
+     */
+    @Parameter(defaultValue = "false", property = "installRPMs")
+    private boolean installRPMs = false;
+
+    /**
      * Custom extra macros to pass through. For example:
+     *
+     * <pre>
+     * {@code
      * <macros>
-     * <dist>.el8eap</dist>
-     * <scl>eap8</scl>
+     *    <dist>.el8eap</dist>
+     *    <scl>eap8</scl>
      * </macros>
+     * }</pre>
      */
     @Parameter(property = "macros")
     private Map<String, String> macros = new HashMap<>();
@@ -107,6 +129,52 @@ public class RPMBuilder extends BaseMojo {
                         + " and properties wrappedBuild=" + wrappedBuild
                         + " meadalpha=" + meadAlpha + " meadrel=" + meadRel
                         + " meadversion=" + meadVersion + " serial=" + serial);
+
+        if (installRPMs) {
+            File rpmDirectory = new File(outputDirectory, "dependency/noarch");
+
+            if (!rpmDirectory.exists()) {
+                throw new MojoExecutionException("Configured to install RPMs but no RPMs found in " + rpmDirectory);
+            }
+            try (Stream<Path> walk = Files.walk(rpmDirectory.toPath(), 1)) {
+                List<Path> rpms = walk.filter(f -> f.getFileName().toString().endsWith(".noarch.rpm")).toList();
+                if (rpms.isEmpty()) {
+                    throw new MojoExecutionException("Configured to install RPMs but no RPMs found in " + rpmDirectory);
+                }
+                for (Path rpm : rpms) {
+                    getLog().info("Extracting rpm " + rpm + " using rpm2cpio/cpio");
+                    AtomicReference<Integer> exitCode = new AtomicReference<>(0);
+                    List<String> args = new ArrayList<>();
+                    args.add("-idmuv");
+                    args.add("--quiet");
+                    args.add("-D");
+                    args.add("/");
+
+                    ProcessBuilder.newBuilder("rpm2cpio")
+                            .directory(rpmDirectory.toPath())
+                            .arguments(rpm.getFileName().toString())
+                            .exitCodeChecker(ec -> {
+                                exitCode.set(ec);
+                                return true;
+                            })
+                            .output()
+                            .pipeTo(Path.of("/usr/bin/cpio"))
+                            .arguments(args)
+                            .output()
+                            .consumeLinesWith(8192, getLog()::info)
+                            .error()
+                            .redirect()
+                            .run();
+
+                    if (exitCode.get() != 0) {
+                        getLog().error("Error building RPM");
+                        throw new MojoExecutionException("Process exited with code " + exitCode.get());
+                    }
+                }
+            } catch (IOException e) {
+                throw new MojoExecutionException(e);
+            }
+        }
 
         try (Stream<Path> walk = Files.walk(workingDirectory.toPath(), 1)) {
 
@@ -190,7 +258,7 @@ public class RPMBuilder extends BaseMojo {
                     .output()
                     .consumeLinesWith(8192, getLog()::info)
                     .error()
-                    .consumeLinesWith(8192, getLog()::info)
+                    .redirect()
                     .run();
 
             if (exitCode.get() != 0) {
@@ -198,7 +266,6 @@ public class RPMBuilder extends BaseMojo {
                 throw new MojoExecutionException("Process exited with code " + exitCode.get());
             }
 
-            // TODO: Remove?
             if (attachZip) {
                 List<File> rpms = findRPMs(outputDirectory.toPath());
                 File output = new File(outputDirectory, project.getArtifactId() + "-" + project.getVersion() + ".zip");
@@ -225,9 +292,11 @@ public class RPMBuilder extends BaseMojo {
         } catch (IOException e) {
             throw new MojoExecutionException(e);
         }
-
     }
 
+    /**
+     * A wrapper class to encapsulate changelog generation information.
+     */
     public static class Changelog {
         public boolean generate;
         public String email = "project-ncl@redhat.com";

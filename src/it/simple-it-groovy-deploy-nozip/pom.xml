@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jboss.pnc.it</groupId>
-  <artifactId>simple-it-groovy-deploy</artifactId>
+  <artifactId>simple-it-groovy-deploy-nozip</artifactId>
   <version>1.0.0.redhat-00002</version>
   <packaging>spec</packaging>
 
@@ -26,6 +26,7 @@
         <version>@project.version@</version>
         <extensions>true</extensions>
         <configuration>
+          <attachZip>false</attachZip>
           <groovyPatch>
             def serial = ("${project.version}" =~ "(.*redhat-0+)(.*)")[0][2]
             def original_version = "${sshd}".replaceAll(".redhat.*", "")
