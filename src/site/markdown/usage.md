@@ -16,13 +16,16 @@ The plugin can run a groovy script (`groovyScript`) to perform patches to a RPM 
 * `serial` - the final part of the increment of the project version e.g. `2` from the example below.
 * `wrappedBuild` the value of the `wrappedBuild` property
 
+## Unpacking Extra RPMs
+
+If the build requires third-party RPMs (that might have been built in a preceding build) then, if the `installRPMs` is set to true, 
+it will use `rpm2cpio` and `cpio` to unpack any `.noarch.rpm` found in `${project.build.directory}/dependency`. This directory has been chosen as it is the default directory used by the [unpack plugin](https://maven.apache.org/plugins/maven-dependency-plugin/unpack-mojo.html). This makes the assumption that the location the noarch rpm requires is writable by the user running the RPM. If the build is running within a container, the Containerfile must be suitable configured e.g. `RUN chmod -R uog+w /opt/rh/eap8/root/usr/share`.
+
 ## Miscellaneous
 
 * The rpms can be packaged into a zip and attached to the build. This may be configured via `attachZip`.
 * A `macros` configuration map may be used to pass additional macro defines to the `rpmbuild` command.
 * A `changeLog` configuration object may be used to trigger change log generation. By default, email is set to `project-ncl@redhat.com` and message is set to `- New Release`.
-* If the `installRPMs` is set to true then it will use `rpm2cpio` and `cpio` to install any `.noarch.rpm` found in `${project.build.directory}/dependency`. This directory has been chosen as it is the default directory used by the [unpack plugin](https://maven.apache.org/plugins/maven-dependency-plugin/unpack-mojo.html) 
-
 
 ## Deployment
 
