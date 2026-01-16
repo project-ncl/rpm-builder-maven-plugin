@@ -1,4 +1,4 @@
-package org.jboss.pnc;
+package org.jboss.pnc.rpmbuilderplugin;
 
 import java.io.File;
 import java.io.IOException;

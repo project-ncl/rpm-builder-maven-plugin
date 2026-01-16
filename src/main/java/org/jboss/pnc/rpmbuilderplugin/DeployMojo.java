@@ -1,4 +1,4 @@
-package org.jboss.pnc;
+package org.jboss.pnc.rpmbuilderplugin;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 

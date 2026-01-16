@@ -1,4 +1,4 @@
-package org.jboss.pnc;
+package org.jboss.pnc.rpmbuilderplugin;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -80,7 +80,7 @@ public class RPMBuilder extends BaseMojo {
     private Changelog changeLog;
 
     /**
-     * Whether to install any noarch RPMs found in the <code>${project.build.directory}/dependency</code> directory
+     * Whether to unpack(install) any noarch RPMs found in the <code>${project.build.directory}/dependency</code> directory
      */
     @Parameter(defaultValue = "false", property = "installRPMs")
     private boolean installRPMs = false;
