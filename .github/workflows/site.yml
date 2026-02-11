@@ -22,6 +22,12 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+    - name: Configure Git User
+      run: |
+        # This sets the name and email for the commits
+        git config --global user.name "github-actions[bot]"
+        # official github action email
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
     - name: Set up JDK
       uses: actions/setup-java@v5
       with:
