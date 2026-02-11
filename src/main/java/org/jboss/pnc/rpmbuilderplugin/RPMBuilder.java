@@ -13,9 +13,13 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,11 +33,15 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.model.PluginExecution;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectHelper;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.jboss.pnc.mavenmanipulator.core.impl.Version;
 
 import groovy.lang.GroovyShell;
@@ -45,6 +53,9 @@ import io.smallrye.common.process.ProcessBuilder;
  */
 @Mojo(name = "package", defaultPhase = LifecyclePhase.PACKAGE)
 public class RPMBuilder extends BaseMojo {
+
+    @Parameter(defaultValue = "${mojoExecution}")
+    protected MojoExecution mojoExecution;
 
     @Inject
     private MavenProjectHelper projectHelper;
@@ -80,7 +91,8 @@ public class RPMBuilder extends BaseMojo {
     private Changelog changeLog;
 
     /**
-     * Whether to unpack(install) any noarch RPMs found in the <code>${project.build.directory}/dependency</code> directory
+     * Whether to unpack(install) any noarch RPMs found in the <code>${project.build.directory}/dependency</code>
+     * directory
      */
     @Parameter(defaultValue = "false", property = "installRPMs")
     private boolean installRPMs = false;
@@ -101,6 +113,8 @@ public class RPMBuilder extends BaseMojo {
 
     public void execute()
             throws MojoExecutionException {
+
+        checkForUnknownParameters();
 
         File buildDir = new File(outputDirectory, "build");
         File specDir = new File(outputDirectory, "spec");
@@ -291,6 +305,57 @@ public class RPMBuilder extends BaseMojo {
             project.getArtifact().setFile(targetSpecFile.toFile());
         } catch (IOException e) {
             throw new MojoExecutionException(e);
+        }
+    }
+
+    /**
+     * Mostly sourced from <code>org.apache.maven.lifecycle.internal.DefaultMojoExecutionConfigurator</code>.
+     *
+     * @throws MojoExecutionException if there are unknown parameters in the XML configuration.
+     */
+    private void checkForUnknownParameters() throws MojoExecutionException {
+        var plugin = project.getBuildPlugins()
+                .stream()
+                .filter(p -> p.equals(mojoExecution.getPlugin()))
+                .findFirst();
+        if (plugin.isEmpty()) {
+            plugin = project.getPluginManagement()
+                    .getPlugins()
+                    .stream()
+                    .filter(p -> p.equals(mojoExecution.getPlugin()))
+                    .findFirst();
+        }
+        if (plugin.isPresent()) {
+            Xpp3Dom pomConfiguration;
+            PluginExecution pluginExecution = null;
+            for (PluginExecution execution : plugin.get().getExecutions()) {
+                if (execution.getId().equals(mojoExecution.getExecutionId())) {
+                    pluginExecution = execution;
+                }
+            }
+            if (pluginExecution != null) {
+                pomConfiguration = (Xpp3Dom) pluginExecution.getConfiguration();
+            } else {
+                pomConfiguration = (Xpp3Dom) plugin.get().getConfiguration();
+            }
+            Set<String> parametersNamesAll = Optional
+                    .ofNullable(mojoExecution.getMojoDescriptor().getPluginDescriptor())
+                    .map(PluginDescriptor::getMojos)
+                    .orElseGet(Collections::emptyList)
+                    .stream()
+                    .filter(m -> m.getParameters() != null)
+                    .flatMap(m -> m.getParameters().stream())
+                    .flatMap(parameter -> Stream.of(parameter.getName()))
+                    .collect(Collectors.toSet());
+            Set<String> unknownParameters = Arrays.stream(pomConfiguration.getChildren())
+                    .map(Xpp3Dom::getName)
+                    .filter(name -> !parametersNamesAll.contains(name))
+                    .collect(Collectors.toSet());
+
+            if (!unknownParameters.isEmpty()) {
+                getLog().error("Found unknown parameter(s) in configuration " + unknownParameters);
+                throw new MojoExecutionException("Unknown parameters " + unknownParameters);
+            }
         }
     }
 
