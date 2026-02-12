@@ -49,5 +49,9 @@ jobs:
                 "username": "${{ secrets.SONATYPE_USERNAME }}",
                 "password": "${{ secrets.SONATYPE_PASSWORD }}"
             }]
+    - name: SSHAgent
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Deploy Snapshot
       run: mvn -B -V site site:stage scm-publish:publish-scm
