@@ -1,0 +1,17 @@
+name: Java CI with Maven
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: ["*"]
+    paths-ignore: ["LICENSE", "README.md"]
+
+jobs:
+  call-maven-ci:
+    uses: project-ncl/shared-github-actions/.github/workflows/maven-ci.yml@153b97777335953545bc8a907eb5f062af66b7f2 # v0.0.18
+    with:
+      build_command: "mvn -B -V install -Prun-its -Dvalidate-format"
+      java_version: "17"
+      upload_artifacts: true
