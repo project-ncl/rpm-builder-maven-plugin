@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jboss</groupId>
     <artifactId>jboss-parent</artifactId>
-    <version>49</version>
+    <version>53</version>
   </parent>
 
   <groupId>org.jboss.pnc</groupId>
@@ -54,14 +54,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.testRelease>17</maven.compiler.testRelease>
     <maven.version>3.9.12</maven.version>
 
-    <jboss.releases.repo.id>central</jboss.releases.repo.id>
-    <jboss.releases.repo.url>https://ossrh-staging-api.central.sonatype.com/service/local/</jboss.releases.repo.url>
-    <jboss.snapshots.repo.id>central</jboss.snapshots.repo.id>
-    <jboss.snapshots.repo.url>https://central.sonatype.com/repository/maven-snapshots</jboss.snapshots.repo.url>
+    <tagNameFormat>@{project.artifactId}-@{project.version}</tagNameFormat>
+
+    <jdk.min.version>17</jdk.min.version>
 
     <selectedTest>*</selectedTest>
   </properties>
@@ -214,15 +213,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.sonatype.central</groupId>
-        <artifactId>central-publishing-maven-plugin</artifactId>
-        <version>0.10.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <publishingServerId>central</publishingServerId>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 
@@ -282,27 +272,6 @@
                   <goal>integration-test</goal>
                   <goal>verify</goal>
                 </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.2.8</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <phase>verify</phase>
               </execution>
             </executions>
           </plugin>
