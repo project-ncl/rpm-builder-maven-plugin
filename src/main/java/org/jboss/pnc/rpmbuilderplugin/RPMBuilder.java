@@ -42,7 +42,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.jboss.pnc.mavenmanipulator.core.impl.Version;
+import org.jboss.pnc.mavenmanipulator.common.Version;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
