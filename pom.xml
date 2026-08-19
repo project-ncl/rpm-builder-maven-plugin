@@ -109,11 +109,11 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.pnc.maven-manipulator</groupId>
-      <artifactId>pom-manipulation-core</artifactId>
-      <version>5.1</version>
+      <artifactId>pom-manipulation-common-lite</artifactId>
+      <version>5.3</version>
       <exclusions>
         <exclusion>
-          <!-- Only want code from the core module itself -->
+          <!-- Only want code from the common module itself -->
           <groupId>*</groupId>
           <artifactId>*</artifactId>
         </exclusion>
