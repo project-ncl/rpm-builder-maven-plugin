@@ -194,55 +194,61 @@
           </dependency>
         </dependencies>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-scm-publish-plugin</artifactId>
-        <version>3.3.0</version>
-        <configuration>
-          <content>${project.reporting.outputDirectory}</content>
-          <scmBranch>gh-pages</scmBranch>
-          <serverId>github</serverId>
-        </configuration>
-        <executions>
-          <execution>
-            <id>scm-publish</id>
-            <goals>
-              <goal>publish-scm</goal>
-            </goals>
-            <phase>site-deploy</phase>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-report-plugin</artifactId>
-        <version>3.15.2</version>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.9.0</version>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>summary</report>
-              <report>scm</report>
-              <report>issue-management</report>
-              <report>licenses</report>
-              <report>plugins</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-    </plugins>
-  </reporting>
-
   <profiles>
+    <profile>
+      <id>reporting</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-scm-publish-plugin</artifactId>
+            <version>3.3.0</version>
+            <configuration>
+              <content>${project.reporting.outputDirectory}</content>
+              <scmBranch>gh-pages</scmBranch>
+              <serverId>github</serverId>
+            </configuration>
+            <executions>
+              <execution>
+                <id>scm-publish</id>
+                <goals>
+                  <goal>publish-scm</goal>
+                </goals>
+                <phase>site-deploy</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-plugin-report-plugin</artifactId>
+            <version>3.15.2</version>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+            <version>3.9.0</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>summary</report>
+                  <report>scm</report>
+                  <report>issue-management</report>
+                  <report>licenses</report>
+                  <report>plugins</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
     <profile>
       <id>run-its</id>
       <build>
