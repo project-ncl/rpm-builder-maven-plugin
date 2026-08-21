@@ -30,6 +30,8 @@ jobs:
       project_name: 'project-ncl/rpm-builder-maven-plugin'
       SCA: true
       SAST: true
+      SAST_EXCLUDES: "src/it/"
+      SCA_EXCLUDES: "src/it/**"
     secrets:
       MEND_URL: ${{ secrets.MEND_URL }}
       MEND_USER_KEY: ${{ secrets.MEND_USER_KEY }}
