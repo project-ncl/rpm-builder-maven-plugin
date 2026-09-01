@@ -29,7 +29,7 @@ jobs:
         # official github action email
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
     - name: Set up JDK
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v6
       with:
         distribution: 'temurin'
         java-version: 17
