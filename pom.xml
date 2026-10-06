@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jboss</groupId>
     <artifactId>jboss-parent</artifactId>
-    <version>53</version>
+    <version>54</version>
   </parent>
 
   <groupId>org.jboss.pnc</groupId>
@@ -53,7 +53,6 @@
   </distributionManagement>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
     <maven.compiler.testRelease>17</maven.compiler.testRelease>
     <maven.version>3.9.16</maven.version>
