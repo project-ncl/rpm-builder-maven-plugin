@@ -39,7 +39,7 @@ jobs:
         maven-version: 3.9.8
     # https://github.com/marketplace/actions/maven-setings-action
     - name: Maven Settings
-      uses: s4u/maven-settings-action@v4.0.0
+      uses: s4u/maven-settings-action@v4.1.0
       with:
         sonatypeSnapshots: true
         githubServer: false
